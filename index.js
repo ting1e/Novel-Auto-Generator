@@ -52,8 +52,8 @@ function log(msg, type = 'info') {
 
 function formatDuration(ms) {
     if (!ms || ms < 0) return '--:--:--';
-    const s = Math.floor(ms/1000)%60, m = Math.floor(ms/60000)%60, h = Math.floor(ms/3600000);
-    return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    const s = Math.floor(ms / 1000) % 60, m = Math.floor(ms / 60000) % 60, h = Math.floor(ms / 3600000);
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
 function escapeHtml(text) {
@@ -72,18 +72,18 @@ function getSTChat() {
             const ctx = SillyTavern.getContext();
             if (ctx?.chat && Array.isArray(ctx.chat)) return ctx.chat;
         }
-    } catch(e) {}
-    
+    } catch (e) { }
+
     try {
         if (typeof getContext === 'function') {
             const ctx = getContext();
             if (ctx?.chat && Array.isArray(ctx.chat)) return ctx.chat;
         }
-    } catch(e) {}
-    
+    } catch (e) { }
+
     if (window.chat && Array.isArray(window.chat)) return window.chat;
     if (typeof chat !== 'undefined' && Array.isArray(chat)) return chat;
-    
+
     return null;
 }
 
@@ -101,11 +101,11 @@ function getRawMessages(startFloor, endFloor, opts = {}) {
     const { includeUser = false, includeAI = true } = opts;
     const stChat = getSTChat();
     if (!stChat) return null;
-    
+
     const messages = [];
     const start = Math.max(0, startFloor);
     const end = Math.min(stChat.length - 1, endFloor);
-    
+
     for (let i = start; i <= end; i++) {
         const msg = stChat[i];
         if (!msg) continue;
@@ -154,16 +154,16 @@ function getAllChapters() {
     const tags = parseTagInput(settings.extractTags);
     const useTags = settings.extractMode === 'tags' && tags.length > 0;
     const chapters = [];
-    
+
     let startFloor = settings.exportAll ? 0 : settings.exportStartFloor;
     let endFloor = settings.exportAll ? getMaxFloorIndex() : settings.exportEndFloor;
-    
+
     if (settings.useRawContent) {
         const rawMessages = getRawMessages(startFloor, endFloor, {
             includeUser: settings.exportIncludeUser,
             includeAI: settings.exportIncludeAI,
         });
-        
+
         if (rawMessages?.length) {
             for (const msg of rawMessages) {
                 let content = useTags ? extractTagContents(msg.content, tags, settings.tagSeparator) : msg.content;
@@ -175,7 +175,7 @@ function getAllChapters() {
             return chapters;
         }
     }
-    
+
     // 回退 DOM
     document.querySelectorAll('#chat .mes').forEach((msg, idx) => {
         if (idx < startFloor || idx > endFloor) return;
@@ -276,9 +276,9 @@ function showHelp(topic) {
 </ul>
         `,
     };
-    
+
     const content = helps[topic] || '<p>暂无帮助内容</p>';
-    
+
     const modal = $(`
         <div class="nag-modal-overlay">
             <div class="nag-modal">
@@ -292,7 +292,7 @@ function showHelp(topic) {
             </div>
         </div>
     `);
-    
+
     function closeModal(e) {
         if (e) {
             e.stopPropagation();
@@ -301,30 +301,30 @@ function showHelp(topic) {
         }
         modal.remove();
     }
-    
+
     // 阻止所有可能触发 drawer 折叠的事件冒泡
-    modal.on('click mousedown mouseup pointerdown pointerup touchstart touchend', function(e) {
+    modal.on('click mousedown mouseup pointerdown pointerup touchstart touchend', function (e) {
         e.stopPropagation();
         e.stopImmediatePropagation();
     });
-    
+
     // 关闭按钮
     modal.find('.nag-modal-close').on('click', closeModal);
-    
+
     // 点击遮罩关闭（点击弹窗内容区域不关闭）
-    modal.on('click', function(e) {
+    modal.on('click', function (e) {
         if (e.target === modal[0]) {
             closeModal(e);
         }
     });
-    
+
     // ESC 键关闭
-    $(document).one('keydown.nagModal', function(e) {
+    $(document).one('keydown.nagModal', function (e) {
         if (e.key === 'Escape') {
             closeModal(e);
         }
     });
-    
+
     // ✅ 关键修改：追加到插件容器内部，而不是 body
     $('#nag-container').append(modal);
 }
@@ -337,12 +337,12 @@ function refreshPreview() {
     const stChat = getSTChat();
     const tags = parseTagInput(settings.extractTags);
     const useTags = settings.extractMode === 'tags' && tags.length > 0;
-    
+
     if (!stChat || stChat.length === 0) {
         $('#nag-preview-content').html(`<div class="nag-preview-warning"><b>⚠️ 无法获取聊天数据</b></div>`);
         return;
     }
-    
+
     let rawContent = '', floor = -1;
     for (let i = stChat.length - 1; i >= 0; i--) {
         const msg = stChat[i];
@@ -352,19 +352,19 @@ function refreshPreview() {
             break;
         }
     }
-    
+
     if (!rawContent) {
         $('#nag-preview-content').html('<i style="opacity:0.6">没有 AI 消息</i>');
         return;
     }
-    
+
     const rawPreview = rawContent.substring(0, 200).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    
+
     let html = `
         <div class="nag-preview-source">楼层 ${floor} | 长度 ${rawContent.length} 字</div>
         <div class="nag-preview-raw">${rawPreview}${rawContent.length > 200 ? '...' : ''}</div>
     `;
-    
+
     if (useTags) {
         const extracted = extractTagContents(rawContent, tags, settings.tagSeparator);
         if (extracted) {
@@ -375,28 +375,28 @@ function refreshPreview() {
     } else {
         html += `<div class="nag-preview-info"><b>📄 全部内容模式</b></div>`;
     }
-    
+
     $('#nag-preview-content').html(html);
 }
 
 function debugRawContent(floorIndex) {
     const stChat = getSTChat();
     if (!stChat) { console.log('❌ 无法获取 chat'); return; }
-    
+
     console.log(`✅ chat 获取成功，共 ${stChat.length} 条`);
-    
+
     if (floorIndex === undefined) {
         for (let i = stChat.length - 1; i >= 0; i--) {
             if (stChat[i] && !stChat[i].is_user) { floorIndex = i; break; }
         }
     }
-    
+
     const msg = stChat[floorIndex];
     if (!msg) { console.log(`楼层 ${floorIndex} 不存在`); return; }
-    
+
     console.log(`\n----- 楼层 ${floorIndex} -----`);
     console.log('mes:', msg.mes?.substring(0, 500));
-    
+
     const tags = parseTagInput(settings.extractTags);
     if (tags.length > 0) {
         console.log(`\n----- 标签测试 [${tags.join(', ')}] -----`);
@@ -420,6 +420,13 @@ function getAIMessagesInfo() {
 
 function hasActiveGeneration() {
     return ['#mes_stop:not([style*="display: none"])', '#send_but[disabled]', '.mes.generating'].some(s => document.querySelector(s));
+}
+
+async function waitForReadyToSend() {
+    while (hasActiveGeneration()) {
+        if (abortGeneration) return;
+        await sleep(300);
+    }
 }
 
 async function waitForNewResponse(prevCount) {
@@ -472,19 +479,30 @@ async function generateSingleChapter(num) {
 
 async function startGeneration() {
     if (settings.isRunning) { toastr.warning('已在运行'); return; }
-    if (hasActiveGeneration()) { toastr.error('请等待当前生成完成'); return; }
-    
+
     settings.isRunning = true; settings.isPaused = false; abortGeneration = false;
     generationStats = { startTime: Date.now(), chaptersGenerated: 0, totalCharacters: 0, errors: [] };
     saveSettings(); updateUI();
+
+    // 如果 AI 正在生成，等待完成
+    if (hasActiveGeneration()) {
+        toastr.info('等待当前 AI 生成完成后开始...');
+        await waitForReadyToSend();
+        if (abortGeneration) {
+            settings.isRunning = false;
+            saveSettings(); updateUI();
+            return;
+        }
+    }
+
     toastr.info(`开始生成 ${settings.totalChapters - settings.currentChapter} 章`);
-    
+
     try {
         for (let i = settings.currentChapter; i < settings.totalChapters; i++) {
             if (abortGeneration) break;
             while (settings.isPaused && !abortGeneration) await sleep(500);
             if (abortGeneration) break;
-            
+
             let success = false, retries = 0;
             while (!success && retries < settings.maxRetries) {
                 try {
@@ -492,7 +510,7 @@ async function startGeneration() {
                     success = true;
                     settings.currentChapter = i + 1;
                     saveSettings(); updateUI();
-                } catch(e) {
+                } catch (e) {
                     retries++;
                     generationStats.errors.push({ chapter: i + 1, error: e.message });
                     if (retries < settings.maxRetries) {
@@ -536,13 +554,13 @@ function downloadFile(content, filename, type = 'text/plain') {
 async function exportNovel(silent = false) {
     const chapters = getAllChapters();
     if (!chapters.length) { if (!silent) toastr.warning('没有内容'); return; }
-    
+
     const totalChars = chapters.reduce((s, c) => s + c.content.length, 0);
     let text = `导出时间: ${new Date().toLocaleString()}\n总章节: ${chapters.length}\n总字数: ${totalChars}\n${'═'.repeat(40)}\n\n`;
     chapters.forEach(ch => {
         text += `══ [${ch.floor}楼] ${ch.isUser ? '用户' : 'AI'} ══\n\n${ch.content}\n\n`;
     });
-    
+
     downloadFile(text, `novel_${chapters.length}ch_${Date.now()}.txt`);
     if (!silent) toastr.success(`已导出 ${chapters.length} 条`);
 }
@@ -563,7 +581,7 @@ function loadSettings() {
     settings = Object.assign({}, defaultSettings, extension_settings[extensionName]);
     // 确保 panelCollapsed 存在
     settings.panelCollapsed = Object.assign({}, defaultSettings.panelCollapsed, settings.panelCollapsed || {});
-    settings.isRunning = false; 
+    settings.isRunning = false;
     settings.isPaused = false;
 }
 
@@ -576,16 +594,16 @@ function updateUI() {
     const pct = settings.totalChapters > 0 ? (settings.currentChapter / settings.totalChapters * 100).toFixed(1) : 0;
     $('#nag-progress-fill').css('width', `${pct}%`);
     $('#nag-progress-text').text(`${settings.currentChapter} / ${settings.totalChapters} (${pct}%)`);
-    
+
     const [txt, cls] = settings.isRunning ? (settings.isPaused ? ['⏸️ 已暂停', 'paused'] : ['▶️ 运行中', 'running']) : ['⏹️ 已停止', 'stopped'];
     $('#nag-status').text(txt).removeClass('stopped paused running').addClass(cls);
-    
+
     $('#nag-btn-start').prop('disabled', settings.isRunning);
     $('#nag-btn-pause').prop('disabled', !settings.isRunning || settings.isPaused);
     $('#nag-btn-resume').prop('disabled', !settings.isPaused);
     $('#nag-btn-stop').prop('disabled', !settings.isRunning);
     $('#nag-btn-reset').prop('disabled', settings.isRunning);
-    
+
     if (settings.isRunning && generationStats.startTime && generationStats.chaptersGenerated > 0) {
         const elapsed = Date.now() - generationStats.startTime;
         const avg = elapsed / generationStats.chaptersGenerated;
@@ -593,7 +611,7 @@ function updateUI() {
         $('#nag-time-remaining').text(formatDuration(avg * (settings.totalChapters - settings.currentChapter)));
     }
     $('#nag-stat-errors').text(generationStats.errors.length);
-    
+
     $('#nag-set-start-floor, #nag-set-end-floor').prop('disabled', settings.exportAll);
     $('#nag-floor-inputs').toggleClass('disabled', settings.exportAll);
 }
@@ -605,7 +623,7 @@ function toggleTagSettings() {
 function togglePanel(panelId) {
     const panel = $(`#nag-panel-${panelId}`);
     const isCollapsed = panel.hasClass('collapsed');
-    
+
     if (isCollapsed) {
         panel.removeClass('collapsed');
         settings.panelCollapsed[panelId] = false;
@@ -613,7 +631,7 @@ function togglePanel(panelId) {
         panel.addClass('collapsed');
         settings.panelCollapsed[panelId] = true;
     }
-    
+
     saveSettings();
 }
 
@@ -763,7 +781,7 @@ function createUI() {
             </div>
         </div>
     </div>`;
-    
+
     $('#extensions_settings').append(html);
     bindEvents();
     syncUI();
@@ -789,35 +807,35 @@ function bindEvents() {
     $('#nag-btn-export-json').on('click', () => exportAsJSON(false));
     $('#nag-btn-refresh-floors').on('click', () => $('#nag-total-floors').text(getTotalFloors()));
     $('#nag-btn-refresh-preview').on('click', refreshPreview);
-    
+
     // 面板折叠
-    $('.nag-panel-header').on('click', function(e) {
+    $('.nag-panel-header').on('click', function (e) {
         // 如果点击的是帮助按钮，不触发折叠
         if ($(e.target).hasClass('nag-help-btn')) return;
         const panelId = $(this).data('panel');
         togglePanel(panelId);
     });
-    
+
     // 帮助按钮
-    $('.nag-help-btn').on('click', function(e) {
+    $('.nag-help-btn').on('click', function (e) {
         e.stopPropagation();
         const topic = $(this).data('help');
         showHelp(topic);
     });
-    
+
     // 设置
-    $('#nag-set-export-all').on('change', function() { settings.exportAll = $(this).prop('checked'); updateUI(); saveSettings(); });
-    $('#nag-set-start-floor').on('change', function() { settings.exportStartFloor = +$(this).val() || 0; saveSettings(); });
-    $('#nag-set-end-floor').on('change', function() { settings.exportEndFloor = +$(this).val() || 99999; saveSettings(); });
-    $('#nag-set-include-user').on('change', function() { settings.exportIncludeUser = $(this).prop('checked'); saveSettings(); });
-    $('#nag-set-include-ai').on('change', function() { settings.exportIncludeAI = $(this).prop('checked'); saveSettings(); });
-    $('#nag-set-use-raw').on('change', function() { settings.useRawContent = $(this).prop('checked'); saveSettings(); refreshPreview(); });
-    $('#nag-set-extract-mode').on('change', function() { settings.extractMode = $(this).val(); toggleTagSettings(); saveSettings(); refreshPreview(); });
-    $('#nag-set-tags').on('change', function() { settings.extractTags = $(this).val(); saveSettings(); refreshPreview(); });
-    $('#nag-set-separator').on('change', function() { settings.tagSeparator = $(this).val().replace(/\\n/g, '\n'); saveSettings(); });
-    
-    const map = {'#nag-set-total':'totalChapters','#nag-set-prompt':'prompt','#nag-set-initial-wait':'initialWaitTime','#nag-set-delay':'delayAfterGeneration','#nag-set-stability-interval':'stabilityCheckInterval','#nag-set-stability-count':'stabilityRequiredCount','#nag-set-autosave':'autoSaveInterval','#nag-set-retries':'maxRetries','#nag-set-minlen':'minChapterLength'};
-    Object.entries(map).forEach(([s,k])=>$(s).on('change',function(){settings[k]=$(this).is('textarea')?$(this).val():+$(this).val();saveSettings();updateUI();}));
+    $('#nag-set-export-all').on('change', function () { settings.exportAll = $(this).prop('checked'); updateUI(); saveSettings(); });
+    $('#nag-set-start-floor').on('change', function () { settings.exportStartFloor = +$(this).val() || 0; saveSettings(); });
+    $('#nag-set-end-floor').on('change', function () { settings.exportEndFloor = +$(this).val() || 99999; saveSettings(); });
+    $('#nag-set-include-user').on('change', function () { settings.exportIncludeUser = $(this).prop('checked'); saveSettings(); });
+    $('#nag-set-include-ai').on('change', function () { settings.exportIncludeAI = $(this).prop('checked'); saveSettings(); });
+    $('#nag-set-use-raw').on('change', function () { settings.useRawContent = $(this).prop('checked'); saveSettings(); refreshPreview(); });
+    $('#nag-set-extract-mode').on('change', function () { settings.extractMode = $(this).val(); toggleTagSettings(); saveSettings(); refreshPreview(); });
+    $('#nag-set-tags').on('change', function () { settings.extractTags = $(this).val(); saveSettings(); refreshPreview(); });
+    $('#nag-set-separator').on('change', function () { settings.tagSeparator = $(this).val().replace(/\\n/g, '\n'); saveSettings(); });
+
+    const map = { '#nag-set-total': 'totalChapters', '#nag-set-prompt': 'prompt', '#nag-set-initial-wait': 'initialWaitTime', '#nag-set-delay': 'delayAfterGeneration', '#nag-set-stability-interval': 'stabilityCheckInterval', '#nag-set-stability-count': 'stabilityRequiredCount', '#nag-set-autosave': 'autoSaveInterval', '#nag-set-retries': 'maxRetries', '#nag-set-minlen': 'minChapterLength' };
+    Object.entries(map).forEach(([s, k]) => $(s).on('change', function () { settings[k] = $(this).is('textarea') ? $(this).val() : +$(this).val(); saveSettings(); updateUI(); }));
 }
 
 function syncUI() {
@@ -831,7 +849,7 @@ function syncUI() {
     $('#nag-set-use-raw').prop('checked', settings.useRawContent);
     $('#nag-set-extract-mode').val(settings.extractMode);
     $('#nag-set-tags').val(settings.extractTags);
-    $('#nag-set-separator').val(settings.tagSeparator.replace(/\n/g,'\\n'));
+    $('#nag-set-separator').val(settings.tagSeparator.replace(/\n/g, '\\n'));
     $('#nag-set-initial-wait').val(settings.initialWaitTime);
     $('#nag-set-delay').val(settings.delayAfterGeneration);
     $('#nag-set-stability-interval').val(settings.stabilityCheckInterval);
