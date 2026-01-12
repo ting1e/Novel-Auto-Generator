@@ -279,7 +279,6 @@ function showHelp(topic) {
     
     const content = helps[topic] || '<p>暂无帮助内容</p>';
     
-    // 创建弹窗
     const modal = $(`
         <div class="nag-modal-overlay">
             <div class="nag-modal">
@@ -294,11 +293,40 @@ function showHelp(topic) {
         </div>
     `);
     
-    modal.find('.nag-modal-close, .nag-modal-overlay').on('click', function(e) {
-        if (e.target === this) modal.remove();
+    function closeModal(e) {
+        if (e) {
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            e.preventDefault();
+        }
+        modal.remove();
+    }
+    
+    // 阻止所有可能触发 drawer 折叠的事件冒泡
+    modal.on('click mousedown mouseup pointerdown pointerup touchstart touchend', function(e) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
     });
     
-    $('body').append(modal);
+    // 关闭按钮
+    modal.find('.nag-modal-close').on('click', closeModal);
+    
+    // 点击遮罩关闭（点击弹窗内容区域不关闭）
+    modal.on('click', function(e) {
+        if (e.target === modal[0]) {
+            closeModal(e);
+        }
+    });
+    
+    // ESC 键关闭
+    $(document).one('keydown.nagModal', function(e) {
+        if (e.key === 'Escape') {
+            closeModal(e);
+        }
+    });
+    
+    // ✅ 关键修改：追加到插件容器内部，而不是 body
+    $('#nag-container').append(modal);
 }
 
 // ============================================
