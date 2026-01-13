@@ -18,6 +18,36 @@
     text-align: center;
 }
 
+/* 聊天 ID 显示 */
+.nag-chat-id-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    font-size: 11px;
+}
+
+.nag-chat-id-label {
+    opacity: 0.7;
+}
+
+.nag-chat-id {
+    font-family: monospace;
+    background: rgba(139, 195, 74, 0.15);
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: #8BC34A;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: help;
+}
+
 .nag-status-badge {
     display: inline-block;
     padding: 6px 16px;
@@ -27,26 +57,58 @@
     margin-bottom: 10px;
 }
 
-.nag-status-badge.stopped { background: rgba(150,150,150,0.3); color: #aaa; }
-.nag-status-badge.running { background: rgba(76,175,80,0.3); color: #4CAF50; animation: pulse 1.5s infinite; }
-.nag-status-badge.paused { background: rgba(255,193,7,0.3); color: #FFC107; }
+.nag-status-badge.stopped {
+    background: rgba(150, 150, 150, 0.3);
+    color: #aaa;
+}
 
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+.nag-status-badge.running {
+    background: rgba(76, 175, 80, 0.3);
+    color: #4CAF50;
+    animation: pulse 1.5s infinite;
+}
 
-.nag-progress-container { margin: 10px 0; }
+.nag-status-badge.paused {
+    background: rgba(255, 193, 7, 0.3);
+    color: #FFC107;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1
+    }
+
+    50% {
+        opacity: 0.7
+    }
+}
+
+.nag-progress-container {
+    margin: 10px 0;
+}
+
 .nag-progress-bar {
-    width: 100%; height: 20px;
-    background: rgba(0,0,0,0.3);
+    width: 100%;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
     overflow: hidden;
 }
+
 .nag-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #4CAF50, #8BC34A);
     border-radius: 10px;
     transition: width 0.5s;
 }
-.nag-progress-text { margin-top: 5px; font-size: 13px; text-align: center; }
+
+.nag-progress-text {
+    margin-top: 5px;
+    font-size: 13px;
+    text-align: center;
+}
 
 .nag-stats-row {
     display: flex;
@@ -58,20 +120,31 @@
 }
 
 /* 按钮 */
-.nag-controls { padding: 8px; }
+.nag-controls {
+    padding: 8px;
+}
+
 .nag-btn-row {
     display: flex;
     gap: 6px;
     margin-bottom: 6px;
 }
-.nag-btn-row:last-child { margin-bottom: 0; }
+
+.nag-btn-row:last-child {
+    margin-bottom: 0;
+}
+
 .nag-btn-row .menu_button {
     flex: 1;
     justify-content: center;
     padding: 8px 4px;
     font-size: 12px;
 }
-.nag-btn-row .menu_button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.nag-btn-row .menu_button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
 /* 设置面板 */
 .nag-settings h4 {
@@ -85,7 +158,7 @@
     margin-bottom: 12px;
 }
 
-.nag-setting-item > label {
+.nag-setting-item>label {
     display: block;
     margin-bottom: 6px;
     font-size: 12px;
@@ -100,7 +173,7 @@
     padding: 8px 10px;
     border: 1px solid var(--SmartThemeBorderColor);
     border-radius: 6px;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0, 0, 0, 0.2);
     color: #fff;
     font-size: 13px;
     box-sizing: border-box;
@@ -119,14 +192,24 @@
     cursor: not-allowed;
 }
 
-.nag-setting-item textarea { resize: vertical; min-height: 50px; }
-.nag-setting-item select option { background: #2a2a2a; color: #fff; }
+.nag-setting-item textarea {
+    resize: vertical;
+    min-height: 50px;
+}
+
+.nag-setting-item select option {
+    background: #2a2a2a;
+    color: #fff;
+}
 
 .nag-setting-row {
     display: flex;
     gap: 10px;
 }
-.nag-setting-row .nag-setting-item { flex: 1; }
+
+.nag-setting-row .nag-setting-item {
+    flex: 1;
+}
 
 .nag-hint {
     font-size: 11px;
@@ -176,7 +259,7 @@
     gap: 8px;
     margin-bottom: 12px;
     padding: 8px 12px;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 6px;
     font-size: 13px;
 }
@@ -185,14 +268,14 @@
 .menu_button_icon {
     padding: 4px 8px;
     font-size: 12px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     border: 1px solid var(--SmartThemeBorderColor);
     border-radius: 4px;
     cursor: pointer;
 }
 
 .menu_button_icon:hover {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* 预览区域 */
@@ -208,7 +291,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 8px 12px;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0, 0, 0, 0.2);
     border-bottom: 1px solid var(--SmartThemeBorderColor);
     font-size: 12px;
     font-weight: bold;
@@ -220,7 +303,7 @@
     overflow-y: auto;
     font-size: 12px;
     line-height: 1.5;
-    background: rgba(0,0,0,0.1);
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .nag-preview-source {
@@ -231,7 +314,7 @@
 
 .nag-preview-text {
     padding: 8px;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
     margin-top: 6px;
     word-break: break-word;
@@ -240,9 +323,17 @@
     overflow-y: auto;
 }
 
-.nag-preview-success { color: #8BC34A; }
-.nag-preview-warning { color: #FFC107; }
-.nag-preview-info { color: #64B5F6; }
+.nag-preview-success {
+    color: #8BC34A;
+}
+
+.nag-preview-warning {
+    color: #FFC107;
+}
+
+.nag-preview-info {
+    color: #64B5F6;
+}
 
 /* 折叠面板 */
 .nag-collapsible .nag-collapse-header {
@@ -258,8 +349,13 @@
     transition: transform 0.2s;
 }
 
-.nag-collapsible.collapsed .nag-collapse-icon { transform: rotate(-90deg); }
-.nag-collapsible.collapsed .nag-collapse-content { display: none; }
+.nag-collapsible.collapsed .nag-collapse-icon {
+    transform: rotate(-90deg);
+}
+
+.nag-collapsible.collapsed .nag-collapse-content {
+    display: none;
+}
 
 .nag-collapse-content {
     margin-top: 12px;
@@ -267,9 +363,18 @@
 
 /* 响应式 */
 @media (max-width: 500px) {
-    .nag-setting-row { flex-direction: column; gap: 0; }
-    .nag-btn-row { flex-wrap: wrap; }
-    .nag-btn-row .menu_button { min-width: calc(50% - 3px); }
+    .nag-setting-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .nag-btn-row {
+        flex-wrap: wrap;
+    }
+
+    .nag-btn-row .menu_button {
+        min-width: calc(50% - 3px);
+    }
 }
 
 /* ============================================
@@ -342,8 +447,15 @@
 }
 
 @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ============================================
@@ -365,8 +477,13 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .nag-modal {
@@ -382,8 +499,15 @@
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .nag-modal-header {
@@ -431,7 +555,8 @@
     margin: 8px 0;
 }
 
-.nag-modal-body ul, .nag-modal-body ol {
+.nag-modal-body ul,
+.nag-modal-body ol {
     margin: 8px 0;
     padding-left: 20px;
 }

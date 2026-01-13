@@ -87,6 +87,34 @@ function getSTChat() {
     return null;
 }
 
+function getChatId() {
+    try {
+        // 尝试从 SillyTavern context 获取聊天标识
+        let ctx = null;
+        if (typeof SillyTavern !== 'undefined' && SillyTavern.getContext) {
+            ctx = SillyTavern.getContext();
+        } else if (typeof getContext === 'function') {
+            ctx = getContext();
+        }
+
+        if (ctx) {
+            // 优先使用 chat_metadata.main_chat（聊天文件名）
+            if (ctx.chat_metadata?.main_chat) {
+                return ctx.chat_metadata.main_chat;
+            }
+            // 回退：使用角色名 + 聊天索引
+            if (ctx.characters && ctx.characterId !== undefined) {
+                const charName = ctx.characters[ctx.characterId]?.name || 'unknown';
+                const chatIndex = ctx.chat_metadata?.chat_index || 0;
+                return `${charName}_chat${chatIndex}`;
+            }
+        }
+    } catch (e) {
+        log('获取聊天ID失败: ' + e.message, 'warning');
+    }
+    return 'default';
+}
+
 function getTotalFloors() {
     const c = getSTChat();
     return c ? c.length : document.querySelectorAll('#chat .mes').length;
@@ -578,15 +606,56 @@ async function exportAsJSON(silent = false) {
 
 function loadSettings() {
     extension_settings[extensionName] = extension_settings[extensionName] || {};
-    settings = Object.assign({}, defaultSettings, extension_settings[extensionName]);
+    const storage = extension_settings[extensionName];
+
+    // 数据迁移：检测旧版格式（直接存储设置而非 chats 结构）
+    if (!storage.chats && storage.totalChapters !== undefined) {
+        log('检测到旧版设置格式，正在迁移...', 'info');
+        const oldSettings = { ...storage };
+        // 清空旧数据
+        Object.keys(storage).forEach(k => delete storage[k]);
+        // 创建新结构，将旧设置存入 default
+        storage.chats = { default: oldSettings };
+        saveSettingsDebounced();
+        log('设置迁移完成', 'success');
+    }
+
+    // 确保 chats 对象存在
+    storage.chats = storage.chats || {};
+
+    // 获取当前聊天 ID
+    const chatId = getChatId();
+
+    // 加载当前聊天的设置，如果不存在则使用默认值
+    const chatSettings = storage.chats[chatId] || {};
+    settings = Object.assign({}, defaultSettings, chatSettings);
+
     // 确保 panelCollapsed 存在
     settings.panelCollapsed = Object.assign({}, defaultSettings.panelCollapsed, settings.panelCollapsed || {});
+
+    // 运行状态不持久化
     settings.isRunning = false;
     settings.isPaused = false;
+
+    // 记录当前聊天 ID
+    settings._chatId = chatId;
+
+    log(`已加载聊天设置: ${chatId}`, 'debug');
 }
 
 function saveSettings() {
-    Object.assign(extension_settings[extensionName], settings);
+    const storage = extension_settings[extensionName];
+    storage.chats = storage.chats || {};
+
+    const chatId = settings._chatId || getChatId();
+
+    // 创建要保存的设置副本（排除运行时状态）
+    const toSave = { ...settings };
+    delete toSave.isRunning;
+    delete toSave.isPaused;
+    delete toSave._chatId;
+
+    storage.chats[chatId] = toSave;
     saveSettingsDebounced();
 }
 
@@ -597,6 +666,11 @@ function updateUI() {
 
     const [txt, cls] = settings.isRunning ? (settings.isPaused ? ['⏸️ 已暂停', 'paused'] : ['▶️ 运行中', 'running']) : ['⏹️ 已停止', 'stopped'];
     $('#nag-status').text(txt).removeClass('stopped paused running').addClass(cls);
+
+    // 显示当前聊天 ID
+    const chatId = settings._chatId || getChatId();
+    const displayId = chatId.length > 25 ? chatId.substring(0, 22) + '...' : chatId;
+    $('#nag-chat-id').text(displayId).attr('title', chatId);
 
     $('#nag-btn-start').prop('disabled', settings.isRunning);
     $('#nag-btn-pause').prop('disabled', !settings.isRunning || settings.isPaused);
@@ -647,6 +721,7 @@ function createUI() {
                 
                 <!-- 状态面板 (不可折叠) -->
                 <div class="nag-section nag-status-panel">
+                    <div class="nag-chat-id-row"><span class="nag-chat-id-label">💬</span> <span id="nag-chat-id" class="nag-chat-id" title="当前聊天标识">--</span></div>
                     <span id="nag-status" class="nag-status-badge stopped">⏹️ 已停止</span>
                     <div class="nag-progress-container">
                         <div class="nag-progress-bar"><div id="nag-progress-fill" class="nag-progress-fill"></div></div>
@@ -869,5 +944,36 @@ jQuery(async () => {
     loadSettings();
     createUI();
     setInterval(() => { if (settings.isRunning) updateUI(); }, 1000);
+
+    // 监听聊天切换事件
+    const eventSource = typeof eventSource !== 'undefined' ? eventSource : (window.eventSource || null);
+    if (eventSource) {
+        // SillyTavern 事件：聊天加载完成
+        eventSource.on('chatLoaded', () => {
+            log('检测到聊天切换，重新加载设置', 'info');
+            loadSettings();
+            syncUI();
+        });
+
+        // 角色选择变化
+        eventSource.on('characterSelected', () => {
+            log('检测到角色切换，重新加载设置', 'info');
+            loadSettings();
+            syncUI();
+        });
+    } else {
+        // 回退方案：定期检查聊天 ID 是否变化
+        let lastChatId = settings._chatId;
+        setInterval(() => {
+            const currentChatId = getChatId();
+            if (currentChatId !== lastChatId) {
+                log(`聊天已切换: ${lastChatId} -> ${currentChatId}`, 'info');
+                lastChatId = currentChatId;
+                loadSettings();
+                syncUI();
+            }
+        }, 2000);
+    }
+
     log('扩展已加载', 'success');
 });
