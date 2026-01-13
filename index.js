@@ -1,5 +1,5 @@
-import { saveSettingsDebounced } from "../../../../script.js";
-import { extension_settings } from "../../../extensions.js";
+import { saveSettingsDebounced, eventSource, event_types } from "../../../../script.js";
+import { extension_settings, getContext } from "../../../extensions.js";
 
 const extensionName = "novel-auto-generator";
 
@@ -89,16 +89,15 @@ function getSTChat() {
 
 function getChatId() {
     try {
-        // 尝试从 SillyTavern context 获取聊天标识
-        let ctx = null;
-        if (typeof SillyTavern !== 'undefined' && SillyTavern.getContext) {
-            ctx = SillyTavern.getContext();
-        } else if (typeof getContext === 'function') {
-            ctx = getContext();
-        }
+        // 使用导入的 getContext 函数获取聊天标识
+        const ctx = getContext();
 
         if (ctx) {
-            // 优先使用 chat_metadata.main_chat（聊天文件名）
+            // 优先使用 chatId（SillyTavern 内部聊天ID）
+            if (ctx.chatId) {
+                return ctx.chatId;
+            }
+            // 其次使用 chat_metadata.main_chat（聊天文件名）
             if (ctx.chat_metadata?.main_chat) {
                 return ctx.chat_metadata.main_chat;
             }
@@ -945,22 +944,17 @@ jQuery(async () => {
     createUI();
     setInterval(() => { if (settings.isRunning) updateUI(); }, 1000);
 
-    // 监听聊天切换事件
-    const eventSource = typeof eventSource !== 'undefined' ? eventSource : (window.eventSource || null);
-    if (eventSource) {
-        // SillyTavern 事件：聊天加载完成
-        eventSource.on('chatLoaded', () => {
-            log('检测到聊天切换，重新加载设置', 'info');
-            loadSettings();
-            syncUI();
-        });
+    // 聊天切换时重新加载设置
+    function onChatChanged() {
+        log('检测到聊天切换，重新加载设置', 'info');
+        loadSettings();
+        syncUI();
+    }
 
-        // 角色选择变化
-        eventSource.on('characterSelected', () => {
-            log('检测到角色切换，重新加载设置', 'info');
-            loadSettings();
-            syncUI();
-        });
+    // 监听 SillyTavern 聊天切换事件
+    if (eventSource && event_types) {
+        eventSource.on(event_types.CHAT_CHANGED, onChatChanged);
+        log('已注册聊天切换事件监听', 'debug');
     } else {
         // 回退方案：定期检查聊天 ID 是否变化
         let lastChatId = settings._chatId;
