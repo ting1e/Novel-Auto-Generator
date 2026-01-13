@@ -490,8 +490,10 @@ async function sendMessage(text) {
 }
 
 async function generateSingleChapter(num) {
+    if (abortGeneration) throw new Error('中止');
     const before = getAIMessagesInfo();
     await sleep(settings.initialWaitTime);
+    if (abortGeneration) throw new Error('中止');
     await sendMessage(settings.prompt);
     const result = await waitForNewResponse(before.count);
     if (result.lastLength < settings.minChapterLength) throw new Error('响应过短');
@@ -539,7 +541,8 @@ async function startGeneration() {
                     generationStats.errors.push({ chapter: i + 1, error: e.message });
                     if (retries < settings.maxRetries) {
                         await sleep(5000);
-                        while (hasActiveGeneration()) await sleep(1000);
+                        if (abortGeneration) break;
+                        while (hasActiveGeneration() && !abortGeneration) await sleep(1000);
                     }
                 }
             }
