@@ -1,4 +1,4 @@
-import { saveSettingsDebounced, eventSource, event_types } from "../../../../script.js";
+import { saveSettingsDebounced, eventSource, event_types, chat_metadata, this_chid, characters } from "../../../../script.js";
 import { extension_settings, getContext } from "../../../extensions.js";
 
 const extensionName = "novel-auto-generator";
@@ -89,24 +89,21 @@ function getSTChat() {
 
 function getChatId() {
     try {
-        // 使用导入的 getContext 函数获取聊天标识
-        const ctx = getContext();
+        // 优先使用 chat_metadata.main_chat（聊天文件名）
+        if (chat_metadata?.main_chat) {
+            return chat_metadata.main_chat;
+        }
 
-        if (ctx) {
-            // 优先使用 chatId（SillyTavern 内部聊天ID）
-            if (ctx.chatId) {
-                return ctx.chatId;
-            }
-            // 其次使用 chat_metadata.main_chat（聊天文件名）
-            if (ctx.chat_metadata?.main_chat) {
-                return ctx.chat_metadata.main_chat;
-            }
-            // 回退：使用角色名 + 聊天索引
-            if (ctx.characters && ctx.characterId !== undefined) {
-                const charName = ctx.characters[ctx.characterId]?.name || 'unknown';
-                const chatIndex = ctx.chat_metadata?.chat_index || 0;
-                return `${charName}_chat${chatIndex}`;
-            }
+        // 其次使用 getContext 获取
+        const ctx = getContext();
+        if (ctx?.chatId) {
+            return ctx.chatId;
+        }
+
+        // 回退：使用角色名 + 聊天索引
+        if (this_chid !== undefined && characters?.[this_chid]) {
+            const charName = characters[this_chid]?.name || 'unknown';
+            return `${charName}_chat`;
         }
     } catch (e) {
         log('获取聊天ID失败: ' + e.message, 'warning');
