@@ -622,8 +622,23 @@ function loadSettings() {
     // 获取当前聊天 ID
     const chatId = getChatId();
 
-    // 加载当前聊天的设置，如果不存在则使用默认值
-    const chatSettings = storage.chats[chatId] || {};
+    // 获取当前聊天的设置
+    let chatSettings = storage.chats[chatId];
+
+    // 如果当前聊天没有设置，使用最近聊天的配置作为默认值
+    if (!chatSettings) {
+        const lastChatId = storage._lastChatId;
+        if (lastChatId && storage.chats[lastChatId]) {
+            // 复制最近聊天的配置（排除运行时状态）
+            const lastSettings = { ...storage.chats[lastChatId] };
+            lastSettings.currentChapter = 0;  // 新聊天重置章节进度
+            chatSettings = lastSettings;
+            log(`新聊天使用最近配置: ${lastChatId}`, 'debug');
+        } else {
+            chatSettings = {};
+        }
+    }
+
     settings = Object.assign({}, defaultSettings, chatSettings);
 
     // 确保 panelCollapsed 存在
@@ -635,6 +650,9 @@ function loadSettings() {
 
     // 记录当前聊天 ID
     settings._chatId = chatId;
+
+    // 更新最近聊天 ID
+    storage._lastChatId = chatId;
 
     log(`已加载聊天设置: ${chatId}`, 'debug');
 }
